@@ -1,0 +1,9 @@
+{"vcs1":{"timestamp_begin":1750400789.803184700, "rt":0.54, "ut":0.07, "st":0.05}}
+{"vcselab":{"timestamp_begin":1750400790.404629416, "rt":0.54, "ut":0.10, "st":0.01}}
+{"link":{"timestamp_begin":1750400790.990382436, "rt":0.13, "ut":0.07, "st":0.06}}
+{"SNPS_VCS_INTERNAL_ROOT_START_TIME": 1750400789.532674773}
+{"VCS_COMP_START_TIME": 1750400789.532674773}
+{"VCS_COMP_END_TIME": 1750400791.178369052}
+{"VCS_USER_OPTIONS": "spi_clkgen.v clkgen_tb.v -full64 -access+all +access+r"}
+{"vcs1": {"peak_mem": 395960}}
+{"vcselab": {"peak_mem": 245700}}

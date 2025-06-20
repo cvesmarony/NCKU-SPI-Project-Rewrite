@@ -1,0 +1,7 @@
+Command exited with non-zero status 255
+{"vcs1":{"timestamp_begin":1750400781.791878788, "rt":0.49, "ut":0.04, "st":0.03}}
+{"SNPS_VCS_INTERNAL_ROOT_START_TIME": 1750400781.523577816}
+{"VCS_COMP_START_TIME": 1750400781.523577816}
+{"VCS_COMP_END_TIME": 1750400782.338465799}
+{"VCS_USER_OPTIONS": "spi_clkgen.v clkgen_tb.v -full64 -access+all +access+r"}
+{"vcs1": {"peak_mem": 383224}}

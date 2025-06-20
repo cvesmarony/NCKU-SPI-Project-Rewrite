@@ -1,0 +1,9 @@
+#######################################################################################
+# fsdb.xxxxx.log : log primitive debug message of FSDB Reader
+# This is for R&D to analyze when there are issues happening when FSDB reading
+# The corresponding FSDB file is /home/trucngu/NCKU-SPI-Project-Rewrite/wave.vcd.fsdb
+#######################################################################################
+[BASIC]Reader version : Synopsys VCS version V-2023.12_Full64
+[BASIC]simulator version : Synopsys VCS version V-2023.12_Full64
+[BASIC]dumper version : unspecified
+[THREAD]The MTR thread count is 12
