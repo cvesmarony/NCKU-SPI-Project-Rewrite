@@ -1,30 +1,28 @@
-module shift_reg (
-    parameter CHAR_LENGTH = 8
+module shift_reg #(
+    parameter DATA_LEN = `DATA_LEN
     )(
         input                       clk,
         input                       rst,
-        input                       load,       // Load signal: load d_in into register
-        input                       shift,      // Shift signal: shift data
-        input [CHAR_LENGTH-1:0]     d_in,       // Input data (parallel)
-        output                      TOP,        // MSB of the shift register
-        output [CHAR_LENGTH-1:0]    d_out       // Current register state
+        input                       load,           // Load signal: load d_in into register
+        input                       shift,          // Shift signal: shift data
+        input  [DATA_LEN-1:0]       d_in,           // Input data (parallel)
+        input                       serial_in,      // for MISO
+        output                      TOP,            // MSB of the shift register
+        output [DATA_LEN-1:0]       d_out           // Current register state
     );
 
-    integer i;
-    reg [CHAR_LENGTH-1:0] shift_reg;
+    reg [DATA_LEN-1:0] shift_reg;
 
     assign d_out = shift_reg;
-    assign TOP = shift_reg[CHAR_LENGTH-1];
+    assign TOP = shift_reg[DATA_LEN-1];
 
     always @(posedge clk or posedge rst) begin
-        if (rst) begin
+        if (rst)
             shift_reg <= 0;
-        end else if (load) begin
+        else if (load)
             shift_reg <= d_in;
-        end else if (shift) begin
-            shift_reg <= shift_reg << 1;
-        end
+        else if (shift)
+            shift_reg <= {shift_reg[DATA_LEN-2:0], serial_in};  // shift left, LSB from serial_in
     end
-
 
 endmodule
