@@ -1,44 +1,44 @@
-`include "spi_defines.vh"
-
 module spi_clkgen #(
-    parameter DIV_WIDTH = `DIV_WIDTH  // Bit width of the divider
-    )(
-        input wire                     sys_clk,    // System clock
-        input wire                     rst,        // Reset
-        input wire [DIV_WIDTH-1:0]     divider,    // Clock divider
-        input wire                     TIP,        // Transfer in progress (external control)
-        input wire                     CS,         // Chip select (active low)
-        input wire                     CPOL,       // Clock polarity (input, configurable)
-        input wire                     CPHA,       // Clock phase
-        output reg                     shift,      // Shift signal
-        output reg                     sample,     // Sample signal
-        output reg                     clk_out     // Generated SPI clock
-    );
+    parameter DIV_WIDTH = `DIV_WIDTH
+)(
+    input wire                     sys_clk,
+    input wire                     rst,
+    input wire [DIV_WIDTH-1:0]     divider,
+    input wire                     TIP,
+    input wire                     CS,
+    input wire                     CPOL,
+    input wire                     CPHA,
+    output reg                     shift,
+    output reg                     sample,
+    output reg                     clk_out
+);
 
     reg [DIV_WIDTH-1:0] count;
+    reg clk_out_prev;
 
     always @(posedge sys_clk or posedge rst) begin
         if (rst) begin
             clk_out <= CPOL;
+            clk_out_prev <= CPOL;
             count   <= 0;
             shift   <= 0;
             sample  <= 0;
         end else begin
             shift  <= 0;
             sample <= 0;
+            clk_out_prev <= clk_out;
 
             if (TIP && ~CS) begin
-                // Counts until divider number then flips clock
                 if (count == (divider >> 1) - 1) begin
                     clk_out <= ~clk_out;
                     count <= 0;
 
-                    if ((clk_out == ~CPOL && CPHA == 1'b0) || (clk_out == CPOL && CPHA == 1'b1)) begin
+                    // Use new value of clk_out (after flip)
+                    if ((~clk_out == ~CPOL && CPHA == 1'b0) || 
+                        (~clk_out == CPOL  && CPHA == 1'b1)) begin
                         sample <= 1;
-                        shift  <= 0;
                     end else begin
-                        shift  <= 1;
-                        sample <= 0;
+                        shift <= 1;
                     end
                 end else begin
                     count <= count + 1;

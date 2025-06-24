@@ -1,3 +1,3 @@
-Command Line: /usr/cad/synopsys/verdi/cur/platform/LINUXAMD64/bin/vfast -silent -del . -o /home/trucngu/NCKU-SPI-Project-Rewrite/wave.vcd.fsdb -ft verilog /home/trucngu/NCKU-SPI-Project-Rewrite/wave.vcd
+Command Line: /usr/cad/synopsys/verdi/cur/platform/LINUXAMD64/bin/vfast -silent -del . -o /home/trucngu/NCKU-SPI-Project-Rewrite/clkgen.vcd.fsdb -ft verilog /home/trucngu/NCKU-SPI-Project-Rewrite/clkgen.vcd
 uname(Linux aislab-eda-server 4.18.0-553.40.1.el8_10.x86_64 #1 SMP Thu Feb 6 21:20:51 EST 2025 x86_64)
-au time 0.011806 0.000524 0.004463 delta 24657920 24657920 total 215527424 215527424
+au time 0.012271 0.002001 0.003023 delta 24657920 24657920 total 215527424 215527424

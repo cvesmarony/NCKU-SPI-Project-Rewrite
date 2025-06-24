@@ -1,2 +1,3 @@
-Command Line: /usr/cad/synopsys/verdi/cur/platform/LINUXAMD64/bin/Novas -nWave wave.vcd
+Command Line: /usr/cad/synopsys/verdi/cur/platform/LINUXAMD64/bin/Novas -nWave clkgen.vcd
 uname(Linux aislab-eda-server 4.18.0-553.40.1.el8_10.x86_64 #1 SMP Thu Feb 6 21:20:51 EST 2025 x86_64)
+au time 77.060373 1.641749 0.801969 delta 281444352 281444352 total 939167744 939167744
