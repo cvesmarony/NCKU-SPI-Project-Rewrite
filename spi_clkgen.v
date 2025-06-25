@@ -1,3 +1,5 @@
+`include "spi_defines.vh"
+
 module spi_clkgen #(
     parameter DIV_WIDTH = `DIV_WIDTH
 )(
@@ -48,5 +50,10 @@ module spi_clkgen #(
                 count   <= 0;
             end
         end
+    end
+
+    always @(posedge sys_clk) begin
+        $display("CLKGEN: TIP=%b, CS=%b, count=%d, clk_out=%b", 
+                TIP, CS, count, clk_out);
     end
 endmodule
