@@ -1,86 +1,53 @@
-`include "spi_defines.vh"
-
 module clkgen_tb;
-    parameter DIV_WIDTH = `DIV_WIDTH;
 
-    reg sys_clk;
-    reg rst;
-    reg [DIV_WIDTH-1:0] divider;
-    reg TIP;
-    reg CS;
-    reg CPOL;
-    reg CPHA;
+    reg clk = 0;
+    reg rst = 1;
+    reg [7:0] data;
+    reg in = 0;
+    wire ext_clk;
+    wire out;
+    wire cs;
 
-    // Outputs
-    wire shift;
-    wire sample;
-    wire clk_out;
-
-    // DUT
-    spi_clkgen #(.DIV_WIDTH(DIV_WIDTH)) dut (
-        .sys_clk(sys_clk),
+    // Instantiate top module
+    top uut (
+        .clk(clk),
         .rst(rst),
-        .divider(divider),
-        .TIP(TIP),
-        .CS(CS),
-        .CPOL(CPOL),
-        .CPHA(CPHA),
-        .shift(shift),
-        .sample(sample),
-        .clk_out(clk_out)
+        .data(data),
+        .in(in),
+        .ext_clk(ext_clk),
+        .out(out),
+        .cs(cs)
     );
 
-    // Clock generation: 10ns period
-    initial sys_clk = 0;
-    always #5 sys_clk = ~sys_clk;
-
-    task run_mode;
-    input mode_cpol;
-    input mode_cpha;
-    input [DIV_WIDTH-1:0] div_val;
-        begin
-            CPOL = mode_cpol;
-            CPHA = mode_cpha;
-            divider = div_val;
-
-            $display("\n--- Testing SPI Mode %0d (CPOL=%0b, CPHA=%0b) ---", (mode_cpol << 1) | mode_cpha, CPOL, CPHA);
-
-            // Reset and initialize
-            rst = 1; #20;
-            rst = 0;
-            CS = 0;        // Chip selected
-            TIP = 1;       // Transfer in progress
-
-            // Run for multiple cycles
-            repeat (40) begin
-                @(posedge sys_clk);
-                $display("Time %4t | clk_out=%b | shift=%b | sample=%b | count=%0d", 
-                         $time, clk_out, shift, sample, dut.count);
-            end
-
-            TIP = 0;
-            CS = 1;       // Deselect
-        end
-    endtask
+    // Generate system clock (100 MHz)
+    always #5 clk = ~clk;
 
     initial begin
-        $dumpfile("clkgen.vcd");
+        $display("Starting SPI Clock Generator Test...");
+        $dumpfile("clkgen_tb.vcd");
         $dumpvars(0, clkgen_tb);
-        // Initial values
-        rst = 0;
-        TIP = 0;
-        CS = 1;
-        CPOL = 0;
-        CPHA = 0;
-        divider = 4;  // Divide sys_clk to slow down SPI clock
 
-        #20;
+        // Initial reset
+        #10 rst = 0;
 
-        run_mode(1'b0, 1'b0, 4); // Mode 0
-        run_mode(1'b0, 1'b1, 4); // Mode 1
-        run_mode(1'b1, 1'b0, 4); // Mode 2
-        run_mode(1'b1, 1'b1, 4); // Mode 3
+        // Send config: leader=1, len=00, CPOL=0, CPHA=0, div=3
+        // 1_00_0_0_011 = 8'b10000011 = 0x83
+        data = 8'h83;
 
+        // Wait for clock edges to appear
+        #1000;
+
+        $display("Finished clock test");
         $finish;
     end
+
+    // Optional monitor
+    reg [7:0] ext_clk_prev;
+    always @(posedge clk) begin
+        if (ext_clk !== ext_clk_prev) begin
+            $display("T=%0t | ext_clk changed to %b", $time, ext_clk);
+            ext_clk_prev <= ext_clk;
+        end
+    end
+
 endmodule
