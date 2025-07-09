@@ -1,34 +1,28 @@
-`include "spi_defines.vh"
-
 module shift_reg #(
-    parameter DATA_LEN = `DATA_LEN
-    )(
-        input                       clk,
-        input                       rst,
-        input [DATA_LEN-1:0]        d_in,
-        input                       sample_en,
-        input                       shift_en,
-        input                       serial_in,
-        output wire                 serial_out,
-        output reg [DATA_LEN-1:0]   d_out
-    );
+    parameter DATA_LEN = 8
+)(
+    input                       clk,
+    input                       rst,
+    input wire [DATA_LEN-1:0]   data_in,       // Parallel input from CPU
+    input                       sample_en,     // Load parallel input to shift register
+    input                       shift_en,      // Enable shifting
+    input                       serial_in,     // Serial input (MISO or MOSI)
+    output wire                 serial_out,    // Serial output (MOSI or MISO)
+    output reg [DATA_LEN-1:0]   data_out       // Parallel output to CPU
+);
 
-    reg [DATA_LEN-1:0] shift_reg;
-
-    assign serial_out = shift_reg[0];
+    assign serial_out = data_out[0];  // LSB-first output
 
     always @(posedge clk or posedge rst) begin
         if (rst) begin
-            shift_reg <= {DATA_LEN{1'b0}};
-            d_out <= {DATA_LEN{1'b0}};
+            data_out <= 8'b0;
         end else begin
             if (sample_en) begin
-                shift_reg <= d_in;
-                d_out <= d_in;
+                data_out <= data_in;
             end else if (shift_en) begin
-                shift_reg <= {serial_in, shift_reg[DATA_LEN-1:1]};
-                d_out <= {serial_in, shift_reg[DATA_LEN-1:1]};
+                data_out <= {serial_in, data_out[DATA_LEN-1:1]};  // Shift right, LSB first
             end
         end
     end
+
 endmodule
