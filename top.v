@@ -52,7 +52,7 @@ module top (
     // CPU interface data handling
     reg data_en;
     // reg [7:0] data_out;
-    wire [7:0] data_in = data;
+    // wire [7:0] data_in = data;
     // assign data = data_en ? rxo : 8'bz;
     assign data = data_en ? rxo : 8'bz;
 
@@ -119,7 +119,7 @@ module top (
         // Reset values
         if (rst) begin
             config_set <= 0;
-            config_reg <= 8'b0;
+            // config_reg <= 8'b0;
             data_en <= 0;
             mode <= 0;
             len <= 0;
@@ -145,7 +145,7 @@ module top (
         end else begin
             if (~config_set) begin
             // $display("DATA_EN:", data_en);
-            config_reg <= data_in;                             // Config from CPU
+            // config_reg <= data_in;                             // Config from CPU
             // $display("DATA_IN:", data_in);
             // $display("DATA:", data);
             {mode, len, cpol, cpha, div} <= data[7:1];      // Config reg
