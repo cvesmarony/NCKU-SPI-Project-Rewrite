@@ -11,7 +11,7 @@ module top (
     );
 
     // Configuration Settings
-    reg [7:0]   config_reg;
+    // reg [7:0]   config_reg;
     reg         config_set;
     reg         set;
 
@@ -171,6 +171,53 @@ module top (
                 // $display("DATA IN:", data_in);
                 // $display("RXO:", rxo);
             end
+            if (count < data_len && config_set) begin      // check logic
+                data_en <= 1;
+            end else if (data_en && (count == data_len)) begin
+                data_en <= 0; // One cycle pulse
+            end
+
+            txi <= txo;
+            rxi <= rxo;
+            // has not sent/received all bits yet and if cs is on and after config
+            if ((count < data_len) && ~cs && config_set) begin          // check logic for cs as it is inout
+            // while (count < data_len) begin
+                // $display("COUNTING") ;
+                // Detecing shift and sample edges
+                shift_edge  = (cpol == cpha) ? sclk_ne : sclk_pe;
+                sample_edge = (cpol == cpha) ? sclk_pe : sclk_ne;
+                // $display("sample edge:", sample_edge);
+                // $display("shift edge:", shift_edge);
+                // $display("sclk ne:", sclk_ne);
+                // $display("sclk pe:", sclk_pe);
+                // $display("sclk:", sclk);
+                // $display("div:", div);
+                // $display("cs:", cs);
+
+                // Determining when to shift and sample
+                if (cpha == 0) begin
+                    // $display("YAY");
+                    shift_tx <= shift_edge;
+                    shift_rx <= shift_edge;
+                    sample_tx <= sample_edge;
+                    sample_rx <= sample_edge;
+                end else begin
+                    if (first_edge) begin
+                        shift_tx    <= shift_edge;
+                        shift_rx  <= shift_edge;
+                        sample_tx   <= sample_edge;
+                        sample_rx <= sample_edge;
+                    end else if (shift_edge || sample_edge)
+                        first_edge <= 1;  // Mark the first clock edge seen
+                end
+            end
+
+            if (shift_tx) begin
+                count <= count + 1;
+                $display("shifted");
+            end
+
+
         end
     end
 
@@ -209,69 +256,69 @@ module top (
     end
 
     // Logic for shifting data
-    always @ (posedge clk) begin
-        txi <= txo;
-        rxi <= rxo;
-        // has not sent/received all bits yet and if cs is on and after config
-        if ((count < data_len) && ~cs && config_set) begin          // check logic for cs as it is inout
-        // while (count < data_len) begin
-            // $display("COUNTING") ;
-            // Detecing shift and sample edges
-            shift_edge  = (cpol == cpha) ? sclk_ne : sclk_pe;
-            sample_edge = (cpol == cpha) ? sclk_pe : sclk_ne;
-            // $display("sample edge:", sample_edge);
-            // $display("shift edge:", shift_edge);
-            // $display("sclk ne:", sclk_ne);
-            // $display("sclk pe:", sclk_pe);
-            // $display("sclk:", sclk);
-            // $display("div:", div);
-            // $display("cs:", cs);
+//     always @ (posedge clk) begin
+//         txi <= txo;
+//         rxi <= rxo;
+//         // has not sent/received all bits yet and if cs is on and after config
+//         if ((count < data_len) && ~cs && config_set) begin          // check logic for cs as it is inout
+//         // while (count < data_len) begin
+//             // $display("COUNTING") ;
+//             // Detecing shift and sample edges
+//             shift_edge  = (cpol == cpha) ? sclk_ne : sclk_pe;
+//             sample_edge = (cpol == cpha) ? sclk_pe : sclk_ne;
+//             // $display("sample edge:", sample_edge);
+//             // $display("shift edge:", shift_edge);
+//             // $display("sclk ne:", sclk_ne);
+//             // $display("sclk pe:", sclk_pe);
+//             // $display("sclk:", sclk);
+//             // $display("div:", div);
+//             // $display("cs:", cs);
 
-            // Determining when to shift and sample
-            if (cpha == 0) begin
-                // $display("YAY");
-                shift_tx <= shift_edge;
-                shift_rx <= shift_edge;
-                sample_tx <= sample_edge;
-                sample_rx <= sample_edge;
-            end else begin
-                if (first_edge) begin
-                    shift_tx    <= shift_edge;
-                    shift_rx  <= shift_edge;
-                    sample_tx   <= sample_edge;
-                    sample_rx <= sample_edge;
-                end else if (shift_edge || sample_edge)
-                    first_edge <= 1;  // Mark the first clock edge seen
-            end
+//             // Determining when to shift and sample
+//             if (cpha == 0) begin
+//                 // $display("YAY");
+//                 shift_tx <= shift_edge;
+//                 shift_rx <= shift_edge;
+//                 sample_tx <= sample_edge;
+//                 sample_rx <= sample_edge;
+//             end else begin
+//                 if (first_edge) begin
+//                     shift_tx    <= shift_edge;
+//                     shift_rx  <= shift_edge;
+//                     sample_tx   <= sample_edge;
+//                     sample_rx <= sample_edge;
+//                 end else if (shift_edge || sample_edge)
+//                     first_edge <= 1;  // Mark the first clock edge seen
+//             end
 
-            // if (shift_rx) count = count + 1;        // add after shifting
-        end
-        // end
-            // Reset count and shift values
-            // count <= 0;
-            // shift_tx <= 0;
-            // shift_rx <= 0;
-            // sample_tx <= 0;
-            // sample_rx <= 0;
-            // cs_out <= 1;
-        // end
-    end
+//             // if (shift_rx) count = count + 1;        // add after shifting
+//         end
+//         // end
+//             // Reset count and shift values
+//             // count <= 0;
+//             // shift_tx <= 0;
+//             // shift_rx <= 0;
+//             // sample_tx <= 0;
+//             // sample_rx <= 0;
+//             // cs_out <= 1;
+//         // end
+//     end
 
-    // Logic for counter
-    always @(posedge clk) begin
-        if (shift_tx) begin
-            count <= count + 1;
-            $display("shifted");
-        end
-    end
+//     // Logic for counter
+//     always @(posedge clk) begin
+//         if (shift_tx) begin
+//             count <= count + 1;
+//             $display("shifted");
+//         end
+//     end
 
-    // Logic for sending data
-    always @(posedge clk) begin
-        if (count < data_len && config_set) begin      // check logic
-            data_en <= 1;
-        end else if (data_en && (count == data_len)) begin
-            data_en <= 0; // One cycle pulse
-        end
-    end
+//     // Logic for sending data
+//     always @(posedge clk) begin
+//         if (count < data_len && config_set) begin      // check logic
+//             data_en <= 1;
+//         end else if (data_en && (count == data_len)) begin
+//             data_en <= 0; // One cycle pulse
+//         end
+//     end
 
 endmodule
