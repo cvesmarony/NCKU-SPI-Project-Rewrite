@@ -115,7 +115,7 @@ module top (
     );
 
     // Logic for configuring and for reset
-    always @(posedge clk or posedge rst) begin
+    always @ (posedge rst) begin
         // Reset values
         if (rst) begin
             config_set <= 0;
@@ -142,7 +142,12 @@ module top (
             ext_clk_out <= 0;
             
         // Configure if not yet configured
-        end else if (~config_set) begin
+        end
+    end
+
+    always @ (posedge clk) begin
+        // Configure if not yet configured
+        if (~config_set && ~rst) begin                      // check rst logic
             // $display("DATA_EN:", data_en);
             config_reg <= data_in;                             // Config from CPU
             // $display("DATA_IN:", data_in);
@@ -256,7 +261,7 @@ module top (
     end
 
     // Logic for counter
-    always @(posedge clk) begin
+    always @ (posedge clk) begin
         if (shift_tx) begin
             count <= count + 1;
             $display("shifted");

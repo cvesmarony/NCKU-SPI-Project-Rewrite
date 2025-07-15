@@ -5,6 +5,6 @@ module pos_edge_detect(
     );
     
     reg sig_dly;
-    always @(posedge clk) sig_dly <= sig;
+    always @ (posedge clk) sig_dly <= sig;
     assign pe = sig & ~sig_dly;
 endmodule

@@ -5,6 +5,6 @@ module neg_edge_detect(
     );
     
     reg sig_dly;
-    always @(posedge clk) sig_dly <= sig;
+    always @ (posedge clk) sig_dly <= sig;
     assign ne = sig_dly & ~sig;
 endmodule
