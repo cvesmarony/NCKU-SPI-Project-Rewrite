@@ -20,29 +20,27 @@ module clkgen (
         endcase
     end
 
-    always @ (posedge rst) begin
+    always @ (posedge clk or posedge rst) begin
+        // $display("cpol:", cpol);
         if (rst) begin
             sclk <= 0;      // needed to be 0 instead of cpol
             count <= 0;
-        end
-    end
-
-    always @ (posedge clk) begin
-        // $display("cpol:", cpol);
-        if (~cs && ~rst) begin         // check rst logic
-            if (count >= div) begin
-                count <= 0;
-                sclk <= ~sclk;
-            end else begin
-                count <= count + 1;
-            end
         end else begin
-            if (cpol) begin
-                sclk <= 1;
+            if (~cs) begin
+                if (count >= div) begin
+                    count <= 0;
+                    sclk <= ~sclk;
+                end else begin
+                    count <= count + 1;
+                end
             end else begin
-                sclk <= 0;
+                if (cpol) begin
+                    sclk <= 1;
+                end else begin
+                    sclk <= 0;
+                end
+                count <= 0;
             end
-            count <= 0;
         end
     end
 

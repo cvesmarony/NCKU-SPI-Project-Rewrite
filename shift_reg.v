@@ -13,14 +13,10 @@ module shift_reg #(
 
     assign serial_out = data_out[0];  // LSB-first output
 
-    always @ (posedge rst) begin
+    always @(posedge clk or posedge rst) begin
         if (rst) begin
             data_out <= 8'b0;
-        end
-    end
-
-    always @ (posedge clk) begin
-        if (~rst) begin             // check rst logic
+        end else begin
             if (sample_en) begin
                 data_out <= data_in;
             end else if (shift_en) begin
