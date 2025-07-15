@@ -25,22 +25,20 @@ module clkgen (
         if (rst) begin
             sclk <= 0;      // needed to be 0 instead of cpol
             count <= 0;
-        end else begin
-            if (~cs) begin
-                if (count >= div) begin
-                    count <= 0;
-                    sclk <= ~sclk;
-                end else begin
-                    count <= count + 1;
-                end
-            end else begin
-                if (cpol) begin
-                    sclk <= 1;
-                end else begin
-                    sclk <= 0;
-                end
+        end else if (~cs) begin
+            if (count >= div) begin
                 count <= 0;
+                sclk <= ~sclk;
+            end else begin
+                count <= count + 1;
             end
+        end else begin
+            if (cpol) begin
+                sclk <= 1;
+            end else begin
+                sclk <= 0;
+            end
+            count <= 0;
         end
     end
 

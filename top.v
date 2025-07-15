@@ -142,8 +142,7 @@ module top (
             ext_clk_out <= 0;
             
         // Configure if not yet configured
-        end else begin
-            if (~config_set) begin
+        end else if (~config_set) begin
             // $display("DATA_EN:", data_en);
             config_reg <= data_in;                             // Config from CPU
             // $display("DATA_IN:", data_in);
@@ -160,17 +159,16 @@ module top (
             
         // Disable data_en after sending so that CPU knows when to send more data
         // end
-            end 
-            if (set) begin
-                data_en <= 1;
-                config_set <= 1;
-                // $display(data_en);
-                // $display("CONFIG REG:", config_reg);
-                // $display("MODE:", mode);
-                // $display("DATA:", data);
-                // $display("DATA IN:", data_in);
-                // $display("RXO:", rxo);
-            end
+        end 
+        if (set) begin
+            data_en <= 1;
+            config_set <= 1;
+            // $display(data_en);
+            // $display("CONFIG REG:", config_reg);
+            // $display("MODE:", mode);
+            // $display("DATA:", data);
+            // $display("DATA IN:", data_in);
+            // $display("RXO:", rxo);
         end
     end
 
