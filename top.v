@@ -69,9 +69,9 @@ module top (
 
     // ext_clk tristate control
     reg ext_clk_en;
-    reg ext_clk_out;
+    // reg ext_clk_out;
     wire ext_clk_in = ext_clk;
-    assign ext_clk = ext_clk_en ? ext_clk_out : 1'bz;
+    assign ext_clk = ext_clk_en ? sclk : 1'bz;
 
     reg shift_edge, sample_edge;
     reg first_edge;
@@ -139,7 +139,7 @@ module top (
             // sclk_pe <= 0;
             shift_edge <= 0;
             sample_edge <= 0;
-            ext_clk_out <= 0;
+            // ext_clk_out <= 0;
             
         // Configure if not yet configured
         end else begin
@@ -195,7 +195,7 @@ module top (
             // $display("sclk pe:", sclk_pe);
 
             ext_clk_en = 1;
-            ext_clk_out = sclk;
+            // ext_clk_out = sclk;
 
         // Follower does NOT drive cs or ext_clk
         end else begin
@@ -204,7 +204,7 @@ module top (
             cs_out = 1'bz;
 
             ext_clk_en = 0;
-            ext_clk_out = 1'bz;
+            // ext_clk_out = 1'bz;
         end
     end
 
