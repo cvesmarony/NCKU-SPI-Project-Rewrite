@@ -20,7 +20,7 @@ module clkgen (
         endcase
     end
 
-    always @ (posedge clk or posedge rst) begin
+    always @ (posedge clk) begin
         // $display("cpol:", cpol);
         if (rst) begin
             sclk <= 0;      // needed to be 0 instead of cpol

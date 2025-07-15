@@ -115,7 +115,7 @@ module top (
     );
 
     // Logic for configuring and for reset
-    always @(posedge clk or posedge rst) begin
+    always @(posedge clk) begin
         // Reset values
         if (rst) begin
             config_set <= 0;
