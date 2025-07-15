@@ -142,8 +142,8 @@ module top (
             ext_clk_out <= 0;
             
         // Configure if not yet configured
-        end else begin
-            if (~config_set) begin
+        end 
+            if (~config_set && ~rst) begin
             // $display("DATA_EN:", data_en);
             config_reg <= data_in;                             // Config from CPU
             // $display("DATA_IN:", data_in);
@@ -170,7 +170,7 @@ module top (
                 // $display("DATA IN:", data_in);
                 // $display("RXO:", rxo);
             end
-        end
+        // end
     end
 
     // Logic for driving CS and ext_clk
