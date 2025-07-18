@@ -11,18 +11,18 @@ module top (
     );
 
     // Configuration Settings
-    // reg [7:0]   config_reg;
+    reg [7:0]   config_reg;
     reg         config_set;
     reg         set;
 
     // Parse configuration fields
-    // wire        mode  = config_reg[7];          // 1 = leader, 0 = follower
-    // wire        len   = config_reg[6];          // 1 = 16 bits, 0 = 8 bits; data length
-    // wire        cpol  = config_reg[5];          // clock polarity
-    // wire        cpha  = config_reg[4];          // clock phase
-    // wire [2:0]  div   = config_reg[3:1];        // divider (configured in clkgen)
-    reg mode, len, cpol, cpha;
-    reg [2:0] div;
+    wire        mode  = config_reg[7];          // 1 = leader, 0 = follower
+    wire        len   = config_reg[6];          // 1 = 16 bits, 0 = 8 bits; data length
+    wire        cpol  = config_reg[5];          // clock polarity
+    wire        cpha  = config_reg[4];          // clock phase
+    wire [2:0]  div   = config_reg[3:1];        // divider (configured in clkgen)
+    // reg mode, len, cpol, cpha;
+    // reg [2:0] div;
     reg [4:0] count;                            // bit count for bits sent/received
     // integer count;
     wire sclk, sclk_pe, sclk_ne;
@@ -52,7 +52,7 @@ module top (
     // CPU interface data handling
     reg data_en;
     // reg [7:0] data_out;
-    // wire [7:0] data_in = data;
+    wire [7:0] data_in = data;
     // assign data = data_en ? rxo : 8'bz;
     assign data = data_en ? rxo : 8'bz;
 
@@ -69,7 +69,7 @@ module top (
 
     // ext_clk tristate control
     reg ext_clk_en;
-    reg ext_clk_out;
+    wire ext_clk_out;
     wire ext_clk_in = ext_clk;
     // assign ext_clk = ext_clk_en ? sclk : 1'bz;
     assign ext_clk = ext_clk_en ? ext_clk_out : 1'bz;
@@ -84,12 +84,12 @@ module top (
         .divider(div),
         .cpol(cpol),
         .cs(cs),
-        .sclk(sclk)
+        .sclk(ext_clk_out)
     );
 
     // Edge detectors on SCLK
-    pos_edge_detect ped(.sig(sclk), .clk(clk), .pe(sclk_pe));
-    neg_edge_detect ned(.sig(sclk), .clk(clk), .ne(sclk_ne));
+    pos_edge_detect ped(.sig(ext_clk_out), .clk(clk), .pe(sclk_pe));
+    neg_edge_detect ned(.sig(ext_clk_out), .clk(clk), .ne(sclk_ne));
 
     // Leader shift register
     shift_reg transmit (
@@ -120,13 +120,13 @@ module top (
         // Reset values
         if (rst) begin
             config_set <= 0;
-            // config_reg <= 8'b0;
+            config_reg <= 8'b0;
             data_en <= 0;
-            mode <= 0;
-            len <= 0;
-            cpol <= 0;
-            cpha <= 0;
-            div <= 3'b0;
+            // mode <= 0;
+            // len <= 0;
+            // cpol <= 0;
+            // cpha <= 0;
+            // div <= 3'b0;
             count <= 0;
             first_edge <= 0;
             txi <= 0;
@@ -146,10 +146,10 @@ module top (
         end else begin
             if (~config_set) begin
             // $display("DATA_EN:", data_en);
-            // config_reg <= data_in;                             // Config from CPU
+            config_reg <= data_in;                             // Config from CPU
             // $display("DATA_IN:", data_in);
             // $display("DATA:", data);
-            {mode, len, cpol, cpha, div} <= data[7:1];      // Config reg
+            // {mode, len, cpol, cpha, div} <= data[7:1];      // Config reg
             // $display("MODE:", mode);
             // $display("CONFIG:", config_reg);
             // data_en <= 1;                                   // Enable data to send back to CPU
@@ -243,7 +243,7 @@ module top (
             // $display("sclk pe:", sclk_pe);
 
             ext_clk_en = 1;
-            ext_clk_out = sclk;
+            // ext_clk_out = sclk;
 
         // Follower does NOT drive cs or ext_clk
         end else begin
@@ -252,7 +252,7 @@ module top (
             cs_out = 1'bz;
 
             ext_clk_en = 0;
-            ext_clk_out = 1'bz;
+            // ext_clk_out = 1'bz;
         end
     end
 
