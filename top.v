@@ -69,7 +69,7 @@ module top (
 
     // ext_clk tristate control
     reg ext_clk_en;
-    wire ext_clk_out;
+    reg ext_clk_out;
     wire ext_clk_in = ext_clk;
     // assign ext_clk = ext_clk_en ? sclk : 1'bz;
     assign ext_clk = ext_clk_en ? ext_clk_out : 1'bz;
@@ -84,12 +84,12 @@ module top (
         .divider(div),
         .cpol(cpol),
         .cs(cs),
-        .sclk(ext_clk_out)
+        .sclk(sclk)
     );
 
     // Edge detectors on SCLK
-    pos_edge_detect ped(.sig(ext_clk_out), .clk(clk), .pe(sclk_pe));
-    neg_edge_detect ned(.sig(ext_clk_out), .clk(clk), .ne(sclk_ne));
+    pos_edge_detect ped(.sig(sclk), .clk(clk), .pe(sclk_pe));
+    neg_edge_detect ned(.sig(sclk), .clk(clk), .ne(sclk_ne));
 
     // Leader shift register
     shift_reg transmit (
@@ -140,7 +140,7 @@ module top (
             // sclk_pe <= 0;
             shift_edge <= 0;
             sample_edge <= 0;
-            // ext_clk_out <= 0;
+            ext_clk_out <= 0;
             
         // Configure if not yet configured
         end else begin
@@ -243,7 +243,7 @@ module top (
             // $display("sclk pe:", sclk_pe);
 
             ext_clk_en = 1;
-            // ext_clk_out = sclk;
+            ext_clk_out = sclk;
 
         // Follower does NOT drive cs or ext_clk
         end else begin
@@ -252,7 +252,7 @@ module top (
             cs_out = 1'bz;
 
             ext_clk_en = 0;
-            // ext_clk_out = 1'bz;
+            ext_clk_out = 1'bz;
         end
     end
 
