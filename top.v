@@ -70,7 +70,7 @@ module top (
     // ext_clk tristate control
     reg ext_clk_en;
     // reg ext_clk_out;
-    wire ext_clk_in = ext_clk;
+    // wire ext_clk_in = ext_clk;
     assign ext_clk = ext_clk_en ? sclk : 1'bz;
 
     reg shift_edge, sample_edge;
