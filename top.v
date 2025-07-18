@@ -140,7 +140,7 @@ module top (
             // sclk_pe <= 0;
             shift_edge <= 0;
             sample_edge <= 0;
-            ext_clk_out <= 0;
+            // ext_clk_out <= 0;
             
         // Configure if not yet configured
         end else begin
