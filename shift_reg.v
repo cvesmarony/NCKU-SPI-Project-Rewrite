@@ -8,7 +8,8 @@ module shift_reg #(
     input                       shift_en,      // Enable shifting
     input                       serial_in,     // Serial input (MISO or MOSI)
     output wire                 serial_out,    // Serial output (MOSI or MISO)
-    output reg [DATA_LEN-1:0]   data_out       // Parallel output to CPU
+    output reg [DATA_LEN-1:0]   data_out,      // Parallel output to CPU
+    input                  load
 );
 
     assign serial_out = data_out[0];  // LSB-first output
@@ -21,6 +22,9 @@ module shift_reg #(
                 data_out <= data_in;
             end else if (shift_en) begin
                 data_out <= {serial_in, data_out[DATA_LEN-1:1]};  // Shift right, LSB first
+            end
+            if (load) begin
+                data_out <= data_in;
             end
         end
     end
