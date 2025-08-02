@@ -1,10 +1,13 @@
 module top (
     input  wire        clk,
     input  wire        rst,
+    // input  wire [7:0]  data_in;
+    input  wire        received,
     input  wire        in,
     inout  wire [7:0]  data,
     inout  wire        cs,
     inout  wire        ext_clk,
+    // output wire [7:0]  data_out,
     output wire        out,
     output wire        ready
 );
@@ -12,7 +15,8 @@ module top (
     // Configuration Settings
     reg [7:0]   config_reg;
     reg         config_set;
-    reg set;
+    reg         set;
+    reg         first;
     
     // State machine
     parameter ST_CONFIG = 2'b00;
@@ -21,6 +25,7 @@ module top (
     parameter ST_TRANSFER = 2'b11;
 
     reg [1:0] state;
+    reg [1:0] prev_state;
 
     // Configuration fields
     wire        mode  = config_reg[7];  // 1 = leader, 0 = follower
@@ -60,6 +65,7 @@ module top (
 
     assign ext_clk = ext_clk_en ? sclk : 1'bz;
     reg load;
+    reg [7:0] recent_data;
 
 
     // Instantiate clock generator and edge detectors
@@ -72,8 +78,8 @@ module top (
         .sclk(sclk)
     );
 
-    pos_edge_detect ped(.sig(sclk), .clk(clk), .pe(sclk_pe));
-    neg_edge_detect ned(.sig(sclk), .clk(clk), .ne(sclk_ne));
+    pos_edge_detect ped(.sig(ext_clk), .clk(clk), .pe(sclk_pe));
+    neg_edge_detect ned(.sig(ext_clk), .clk(clk), .ne(sclk_ne));
 
     // Shift registers
     shift_reg transmit (
@@ -102,6 +108,11 @@ module top (
 
     // Main state machine
     always @(posedge clk or posedge rst) begin
+        // $display("prev state: ", prev_state);
+        // $display(data_in);
+        // $display("mode: ", mode);
+        // $display ("ext clk: ", ext_clk);
+        // $display("cs: ", cs);
         if (rst) begin
             state <= ST_CONFIG;
             config_set <= 0;
@@ -116,6 +127,8 @@ module top (
             sample_tx <= 0;
             sample_rx <= 0;
             cs_out <= 1;
+            first <= 1;
+            // wait_rec <= 0;
         end else begin
             // Default values
             shift_tx <= 0;
@@ -127,6 +140,7 @@ module top (
                 ST_CONFIG: begin
                     if (~config_set) begin
                         config_reg <= data_in;
+                        recent_data <= config_reg;
                         if (config_reg[0] == 1'b0) begin  // Only capture non-zero config
                             config_set <= 1;
                             set <= 1;
@@ -138,40 +152,83 @@ module top (
                 end
                 
                 ST_READY: begin
-                    set <= 0;
-                    if (mode) begin // Leader mode
-                        if (data_in != config_reg) begin // Valid data received
-                            txi <= data_in;
-                            
-                            count <= 0;
+                    // $display("READY MODE: ", mode);
+                    // $display("data_in: ", data_in);
+                    // $display("ready: ", ready);
+                    // $display("recent: ", recent_data);
+                    // $display("config: ", config_reg);
+                    // $display("ready");
+                    // $display("set: ", set);
+                    if (prev_state != state) begin
+                        // $display("reset");
+                        set <= 0;
+                    end
+                    // $display("set: ", set);
+
+                    // $display("recent: ", recent_data);
+                    // $display("data in: ", data_in);
+                    // $display("data en: ", data_en);
+                    // if (received || first) begin
+                    // if (received) begin
+                    //     data_en <= 0;
+                    //     set <= 0;
+                    //     // wait_rec <= 0;
+                    // end
+                    // data_en <= 0;
+                    if (data_in != recent_data && data_in != rxo) begin
+                        // $display("here");
+                        // recent_data <= txi;
+                        txi <= data_in;
+                        recent_data <= data_in;
+                        // $display("recent: ", data_in);
+                        load <= 1;
+                        count <= 0;
+                        first_edge <= 0;
+                        first <= 0;
+                        set <= 1;
+                    end
+
+                    if (mode && set && load) begin
+                        if (~first) begin
                             state <= ST_TX_RX;
-                            load <= 1;
-                            data_en <= 0;  // Release bus
-                            // cs_out <= 0;   // Assert CS
+                            // data_en <= 1;
+                            cs_out <= 0;
                         end
-                    end else begin // Follower mode
+                    end else if (~mode && set && load) begin
+                        // $display("waiting");
+                        // $display("recent: ", data_in);
+                        // $display("cs_in: ", cs);
                         if (~cs_in) begin
-                            count <= 0;
                             state <= ST_TX_RX;
-                            first_edge <= 0;
-                            load <= 1;
+                            // data_en <= 1;
                         end
                     end
+                    // end
+
                 end
                 
                 ST_TX_RX: begin
-                    cs_out <= 0;
+                    // cs_out <= 0;
                     load <= 0;
-                    
-                    $display("txi: ", txi);
-                    $display("rxi: ", rxi);
-                    $display("txo: ", txo);
-                    $display("rxo: ", rxo);
-                    $display("in: ", in);
+                    set <= 0;
+                    $display("TX RX MODE: ", mode);
+                    $display("ext clk: ", ext_clk);
+                    $display("clk: ", clk);
+                    // $display("txi: ", txi);
+                    // $display("rxi: ", rxi);
+                    // $display("txo: ", txo);
+                    // $display("rxo: ", rxo);
+                    // $display("in: ", in);
+                    // $display("count: ", count);
+                    // $display("data in:", data_in);
+                    // $display("cs: ", cs);
 
                     if (count < data_len && config_set) begin      // check logic
                         data_en <= 1;
                     end else if (data_en && (count == data_len)) begin
+                        set <= 1;
+                        cs_out <= 1;
+                        // data_en <= 0;
                         state <= ST_TRANSFER;
                     end
 
@@ -205,15 +262,28 @@ module top (
 
             if (shift_tx) begin
                 count <= count + 1;
-                $display("shifted");
+                $display("shifted ", mode);
             end
 
                 end
 
             ST_TRANSFER: begin
-                set <= 1;
-                $display("rxo: ", rxo);
-                $display("data: ", data);
+                $display("TRANSFER MODE: ", mode);
+                // set <= 1;
+                // cs_out <= 1;
+                // wait_rec <= 1;
+                // $display("rxo: ", rxo);
+                // $display("data: ", data);
+                // $display("")
+                if (received) begin
+                    $display("here");
+                    set <= 0;
+                    data_en <= 0;
+                    state <= ST_READY;
+                end
+                // $display("recent: ", recent_data);
+                // $display("data in: ", data_in);
+                // $display("data en: ", data_en);
 
             end
             endcase

@@ -9,7 +9,7 @@ module shift_reg #(
     input                       serial_in,     // Serial input (MISO or MOSI)
     output wire                 serial_out,    // Serial output (MOSI or MISO)
     output reg [DATA_LEN-1:0]   data_out,      // Parallel output to CPU
-    input                  load
+    input                       load
 );
 
     assign serial_out = data_out[0];  // LSB-first output
