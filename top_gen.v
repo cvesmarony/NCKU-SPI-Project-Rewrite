@@ -1,7 +1,7 @@
 module top_gen (
-//    input  wire        clk,
-    input wire sysclk_p,    // from AD12
-    input wire sysclk_n,    // from AD11
+    input  wire        clk,
+    // input wire sysclk_p,    // from AD12
+    // input wire sysclk_n,    // from AD11
     input  wire        rst,
     input  wire [7:0]  sw,
     input  wire        received,
@@ -14,16 +14,16 @@ module top_gen (
     output wire        ready
 );
 
-    wire clk;
+    // wire clk;
     
-    IBUFDS #(
-        .DIFF_TERM("TRUE"),
-        .IBUF_LOW_PWR("FALSE")
-    ) clk_ibufds (
-        .O(clk),
-        .I(sysclk_p),
-        .IB(sysclk_n)
-    );
+    // IBUFDS #(
+    //     .DIFF_TERM("TRUE"),
+    //     .IBUF_LOW_PWR("FALSE")
+    // ) clk_ibufds (
+    //     .O(clk),
+    //     .I(sysclk_p),
+    //     .IB(sysclk_n)
+    // );
 
     // Configuration Settings
     reg [7:0]   config_reg;
@@ -59,7 +59,8 @@ module top_gen (
 
     // CPU interface
     reg data_en;
-    wire [7:0] data_in = sw;
+    wire [7:0] data_in = sw;  // switches become input
+    assign led = data_en ? rxo : 8'b0;  // drive output to LEDs when ready
     assign ready = set;  // Ready signal indicates configuration complete
 
     // Shift control
@@ -150,6 +151,7 @@ module top_gen (
             
             case (state)
                 ST_CONFIG: begin
+                    $display("data in: ", sw);
                     if (~config_set) begin
                         config_reg <= data_in;
                         recent_data <= config_reg;
@@ -226,10 +228,10 @@ module top_gen (
                     $display("TX RX MODE: ", mode);
                     $display("ext clk: ", ext_clk);
                     $display("clk: ", clk);
-                    // $display("txi: ", txi);
-                    // $display("rxi: ", rxi);
-                    // $display("txo: ", txo);
-                    // $display("rxo: ", rxo);
+                    $display("txi: ", txi);
+                    $display("rxi: ", rxi);
+                    $display("txo: ", txo);
+                    $display("rxo: ", rxo);
                     // $display("in: ", in);
                     // $display("count: ", count);
                     // $display("data in:", data_in);
