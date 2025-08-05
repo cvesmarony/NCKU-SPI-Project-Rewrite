@@ -1,13 +1,11 @@
-module top (
+module top_z2 (
     input  wire        clk,
     input  wire        rst,
-    // input  wire [7:0]  data_in;
     input  wire        received,
     input  wire        in,
     inout  wire [7:0]  data,
     inout  wire        cs,
     inout  wire        ext_clk,
-    // output wire [7:0]  data_out,
     output wire        out,
     output wire        ready
 );
