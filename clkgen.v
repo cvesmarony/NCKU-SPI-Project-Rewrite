@@ -8,21 +8,30 @@ module clkgen (
         output reg          sclk
     );
 
-    reg [15:0]      count;
-    reg [15:0]      div;
+    reg [16:0]      count;
+    reg [16:0]      div;
     always @ (*) begin
         case (divider)
             3'b000:      div <= 1;
-            3'b001:      div <= 4;
-            3'b010:      div <= 8;
-            3'b011:      div <= 16;
-            default:    div <= 4;
+            3'b001:      div <= 1024;
+            3'b010:      div <= 2048;
+            3'b011:      div <= 4096;
+            3'b100:      div <= 8192;
+            3'b101:      div <= 16384;
+            3'b110:      div <= 32768;
+            3'b111:      div <= 65536;
+            default:    div <= 1024;
         endcase
     end
 
     always @ (posedge clk or posedge rst) begin
         // $display("cpol:", cpol);
         if (rst) begin
+//            if (cpol) begin
+//                sclk <= 1;
+//            end else begin
+//                sclk <= 0;
+//            end
             sclk <= 0;      // needed to be 0 instead of cpol
             count <= 0;
         end else if (~cs) begin

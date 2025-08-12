@@ -106,11 +106,6 @@ module top_z2 (
 
     // Main state machine
     always @(posedge clk or posedge rst) begin
-        // $display("prev state: ", prev_state);
-        // $display(data_in);
-        // $display("mode: ", mode);
-        // $display ("ext clk: ", ext_clk);
-        // $display("cs: ", cs);
         if (rst) begin
             state <= ST_CONFIG;
             config_set <= 0;
@@ -126,13 +121,14 @@ module top_z2 (
             sample_rx <= 0;
             cs_out <= 1;
             first <= 1;
-            // wait_rec <= 0;
+            recent_data <= 0;
         end else begin
             // Default values
             shift_tx <= 0;
             shift_rx <= 0;
             sample_tx <= 0;
             sample_rx <= 0;
+            prev_state <= state;
             
             case (state)
                 ST_CONFIG: begin
@@ -150,35 +146,13 @@ module top_z2 (
                 end
                 
                 ST_READY: begin
-                    // $display("READY MODE: ", mode);
-                    // $display("data_in: ", data_in);
-                    // $display("ready: ", ready);
-                    // $display("recent: ", recent_data);
-                    // $display("config: ", config_reg);
-                    // $display("ready");
-                    // $display("set: ", set);
                     if (prev_state != state) begin
-                        // $display("reset");
                         set <= 0;
                     end
-                    // $display("set: ", set);
-
-                    // $display("recent: ", recent_data);
-                    // $display("data in: ", data_in);
-                    // $display("data en: ", data_en);
-                    // if (received || first) begin
-                    // if (received) begin
-                    //     data_en <= 0;
-                    //     set <= 0;
-                    //     // wait_rec <= 0;
-                    // end
-                    // data_en <= 0;
+                    
                     if (data_in != recent_data && data_in != rxo) begin
-                        // $display("here");
-                        // recent_data <= txi;
                         txi <= data_in;
                         recent_data <= data_in;
-                        // $display("recent: ", data_in);
                         load <= 1;
                         count <= 0;
                         first_edge <= 0;
@@ -186,41 +160,22 @@ module top_z2 (
                         set <= 1;
                     end
 
-                    if (mode && set && load) begin
+                    if (mode && load) begin
                         if (~first) begin
                             state <= ST_TX_RX;
-                            // data_en <= 1;
                             cs_out <= 0;
                         end
-                    end else if (~mode && set && load) begin
-                        // $display("waiting");
-                        // $display("recent: ", data_in);
-                        // $display("cs_in: ", cs);
+                    end else if (~mode && load) begin
                         if (~cs_in) begin
                             state <= ST_TX_RX;
-                            // data_en <= 1;
                         end
                     end
-                    // end
-
                 end
                 
                 ST_TX_RX: begin
-                    // cs_out <= 0;
                     load <= 0;
                     set <= 0;
-                    $display("TX RX MODE: ", mode);
-                    $display("ext clk: ", ext_clk);
-                    $display("clk: ", clk);
-                    // $display("txi: ", txi);
-                    // $display("rxi: ", rxi);
-                    // $display("txo: ", txo);
-                    // $display("rxo: ", rxo);
-                    // $display("in: ", in);
-                    // $display("count: ", count);
-                    // $display("data in:", data_in);
-                    // $display("cs: ", cs);
-
+                    
                     if (count < data_len && config_set) begin      // check logic
                         data_en <= 1;
                     end else if (data_en && (count == data_len)) begin
@@ -234,9 +189,6 @@ module top_z2 (
                     rxi <= rxo;
                     // has not sent/received all bits yet and if cs is on and after config
                     if ((count < data_len) && ~cs && config_set && ~load) begin          // check logic for cs as it is inout
-                    // while (count < data_len) begin
-                        // $display("COUNTING") ;
-                        // Detecing shift and sample edges
                         shift_edge  = (cpol == cpha) ? sclk_ne : sclk_pe;
                         sample_edge = (cpol == cpha) ? sclk_pe : sclk_ne;
                         
@@ -260,29 +212,17 @@ module top_z2 (
 
             if (shift_tx) begin
                 count <= count + 1;
-                $display("shifted ", mode);
             end
 
                 end
 
             ST_TRANSFER: begin
-                $display("TRANSFER MODE: ", mode);
-                // set <= 1;
-                // cs_out <= 1;
-                // wait_rec <= 1;
-                // $display("rxo: ", rxo);
-                // $display("data: ", data);
-                // $display("")
+                 cs_out <= 1;
                 if (received) begin
-                    $display("here");
                     set <= 0;
                     data_en <= 0;
                     state <= ST_READY;
                 end
-                // $display("recent: ", recent_data);
-                // $display("data in: ", data_in);
-                // $display("data en: ", data_en);
-
             end
             endcase
 
